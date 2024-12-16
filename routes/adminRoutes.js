@@ -78,6 +78,7 @@ router.get('/get-advertisements-for-carousel',  adminController.fetchAdvertiseme
 router.get('/get-advertisement-url-on-click/:id', adminAuth, adminController.handleAdClick);
 router.get('/get-all-advertisements', adminAuth, adminController.fetchAdvertisements);
 router.post('/update-ad-status', adminAuth, adminController.changeAdvertisementStatus);
+router.post('/ad-click', adminController.handleAdClick);
 
 //Add Movie Post
 router.post('/add-videos', adminAuth, cpUpload, adminController.AddVideos);

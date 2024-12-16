@@ -1076,7 +1076,7 @@ const changeAdvertisementStatus = async(req, res)=>{
 // handle adclick controller
 const handleAdClick = async(req, res)=>{
     try {
-        const adId = req.params.id;
+        const {adId} = req.body;
         const ad = await Advertisement.findById(adId);
         if(!ad){
             return res.status(404).json({ error: "Advertisement not found" });
