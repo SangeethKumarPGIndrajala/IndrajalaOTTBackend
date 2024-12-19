@@ -456,7 +456,7 @@ const returnHover = async (req, res) => {
     try {
         const movies = await Movies.find({}, 'movieFullImage description movieName year rating url category movieLogoImage smallMovieImage movieMobileImage')
                     .sort({ createdAt: -1 })
-                    .limit(1);  // Limit the result to 1 movie
+                    .limit(5);  // Limit the result to 1 movie
 
             
 
