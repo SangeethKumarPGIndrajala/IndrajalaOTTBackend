@@ -69,6 +69,29 @@ const adImageUploadFields = adImageUpload.fields([
     {name: "desktopImage", maxCount: 1}
 ]);
 
+//setting the advertisement video upload limits
+const adVideoUploadLimits = {
+    fileSize: 1024 * 1024 * 1024 * 10 // Set limit to 10 GB (adjust as needed)    
+};
+
+// handling ad video upload
+const adVideoStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./public/adVideos");
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        cb(null, `${uniqueSuffix}-${file.originalname}`);
+    }
+});
+
+const adVideoUpload = multer({ storage: adVideoStorage, limits: adVideoUploadLimits });
+
+// handling multiple ad video uploads
+const adVideoUploadFields = adVideoUpload.fields([
+    {name: "adVideo", maxCount: 1}
+]);
+
 
 router.post('/login', adminController.adminLogin);
 
@@ -79,6 +102,12 @@ router.get('/get-advertisement-url-on-click/:id', adminAuth, adminController.han
 router.get('/get-all-advertisements', adminAuth, adminController.fetchAdvertisements);
 router.post('/update-ad-status', adminAuth, adminController.changeAdvertisementStatus);
 router.post('/ad-click', adminController.handleAdClick);
+router.post('/add-ad-video', adminAuth, adVideoUploadFields, adminController.addAdvertisementVideo);
+router.get('/get-random-trailer-video', adminController.fetchRandomTrailerAdvertisements);
+router.get('/get-random-full-video-ad', adminController.fetchRandomFullVideoAdvertisements);
+router.get('/get-all-ad-videos', adminAuth, adminController.getAllVideoAdvertisements);
+router.post('/update-video-ad-status', adminAuth, adminController.updateVideoAdStatus);
+router.delete('/delete-video-ad/:id', adminAuth, adminController.deleteVideoAdvertisement);
 
 //Add Movie Post
 router.post('/add-videos', adminAuth, cpUpload, adminController.AddVideos);

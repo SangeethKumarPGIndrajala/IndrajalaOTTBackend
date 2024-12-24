@@ -12,6 +12,7 @@ const {User} = require('../models/User');
 const Recommendation = require('../models/Recommendation');
 const Advertisement = require('../models/Advertisement');
 const { error } = require('console');
+const VideoAd = require('../models/VideoAd');
 
 const adminLogin = async (req, res) => {
     try {
@@ -1100,8 +1101,117 @@ const handleAdClick = async(req, res)=>{
     }
 }
 
+// handling ad videos
+// add advertisement video controller
+const addAdvertisementVideo = async(req, res)=>{
+    try {
+        const {title, adType} = req.body;
+        const files = req.files;
+        const video = files['adVideo'] ? files['adVideo'][0].filename : null;
+        const videoAd =  new VideoAd({
+            adTitle: title,
+            adType: adType,
+            adURL: video ? `/adVideos/${video}`:null
+        });
+        await videoAd.save();
+        res.status(200).json({
+            message: "Advertisement Video added successfully",
+        });
+    } catch (error) {
+        console.log("Error Adding Advertisement Video:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
 
+// fetch random trailer advertisements videos controller
+const fetchRandomTrailerAdvertisements = async(req, res)=>{
+    try {
+        const trailerAdvertisemets = await VideoAd.find({adType: "trailer", status: "active"}).sort({_id: -1});
+        if(trailerAdvertisemets.length === 0){
+            return res.status(404).json({ error: "No Trailer Advertisements found" });
+        }
+        const randomTrailerAd = trailerAdvertisemets[Math.floor(Math.random() * trailerAdvertisemets.length)];
+        await VideoAd.findByIdAndUpdate(randomTrailerAd._id, {adFrequency: randomTrailerAd.adFrequency + 1});
+        res.status(200).json({
+            message: "Random Trailer Advertisement fetched successfully",
+            randomTrailerAd: randomTrailerAd
+        });
+    } catch (error) {
+        console.log("Error Fetching Trailer Advertisements:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
 
+// fetch random full-video advertisements videos controller
+const fetchRandomFullVideoAdvertisements = async(req, res)=>{
+    try {
+        const fullVideoAdvertisements = await VideoAd.find({adType: "full-length", status: "active"}).sort({_id: -1});
+        if(fullVideoAdvertisements.length === 0){
+            return res.status(404).json({ error: "No Full-Video Advertisements found" });
+        }
+        const randomFullVideoAd = fullVideoAdvertisements[Math.floor(Math.random() * fullVideoAdvertisements.length)];
+        await VideoAd.findByIdAndUpdate(randomFullVideoAd._id, {adFrequency: randomFullVideoAd.adFrequency + 1});
+        res.status(200).json({
+            message: "Random Full-Video Advertisement fetched successfully",
+            randomFullVideoAd: randomFullVideoAd
+        });
+    } catch (error) {
+        console.log("Error Fetching Full-Video Advertisements:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+// get all video advertisements controller
+const getAllVideoAdvertisements = async(req, res)=>{
+    try {
+        const allVideoAdvertisements = await VideoAd.find().sort({_id: -1});
+        res.status(200).json({
+            message: "All Video Advertisements fetched successfully",
+            allVideoAdvertisements: allVideoAdvertisements
+        });
+    } catch (error) {
+        console.log("Error Fetching All Video Advertisements:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+// update video ad status controller
+const updateVideoAdStatus = async(req, res)=>{
+    try {
+        const {adId, status} = req.body;
+        const ad = await VideoAd.findById(adId);
+        if(!ad){
+            return res.status(404).json({ error: "Advertisement not found" });
+        }
+        ad.status = status;
+        await ad.save();
+        res.status(200).json({
+            message: "Advertisement status updated successfully",
+            status: ad.status
+        });
+    } catch (error) {
+        console.log("Error Updating Video Ad Status:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+//delete video advertisement controller
+const deleteVideoAdvertisement = async(req, res)=>{
+    try {
+        const {id} = req.params;
+        const ad = await VideoAd.findById(id);
+        if(!ad){
+            return res.status(404).json({ error: "Advertisement not found" });
+        }
+        await VideoAd.findByIdAndDelete(id);
+        res.status(200).json({
+            message: "Advertisement deleted successfully"
+        });
+    } catch (error) {
+        console.log("Error Deleting Video Advertisement:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
 
 module.exports = {
     adminLogin,
@@ -1157,6 +1267,10 @@ module.exports = {
     handleAdClick,
     fetchAdvertisements,
     changeAdvertisementStatus,
-
-    
+    addAdvertisementVideo,
+    fetchRandomFullVideoAdvertisements,
+    fetchRandomTrailerAdvertisements,
+    getAllVideoAdvertisements,
+    updateVideoAdStatus,
+    deleteVideoAdvertisement
 };
