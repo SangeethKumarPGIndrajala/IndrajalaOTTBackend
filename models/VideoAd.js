@@ -19,6 +19,9 @@ const VideoAdSchema = new mongoose.Schema({
     status:{
         type:String,
         default:"active"
+    },
+    adRedirectURL:{
+        type:String
     }
 });
 

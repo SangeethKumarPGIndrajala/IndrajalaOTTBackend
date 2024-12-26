@@ -1106,12 +1106,14 @@ const handleAdClick = async(req, res)=>{
 const addAdvertisementVideo = async(req, res)=>{
     try {
         const {title, adType} = req.body;
+        const adRedirectURL = req.body.adRedirectURL ? req.body.adRedirectURL : null;
         const files = req.files;
         const video = files['adVideo'] ? files['adVideo'][0].filename : null;
         const videoAd =  new VideoAd({
             adTitle: title,
             adType: adType,
-            adURL: video ? `/adVideos/${video}`:null
+            adURL: video ? `/adVideos/${video}`:null,
+            adRedirectURL: adRedirectURL,
         });
         await videoAd.save();
         res.status(200).json({
