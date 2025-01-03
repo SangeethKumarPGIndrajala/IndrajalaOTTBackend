@@ -13,6 +13,7 @@ const Recommendation = require('../models/Recommendation');
 const Advertisement = require('../models/Advertisement');
 const { error } = require('console');
 const VideoAd = require('../models/VideoAd');
+const ImageCarousel = require('../models/ImageCarousel');
 
 const adminLogin = async (req, res) => {
     try {
@@ -1215,6 +1216,63 @@ const deleteVideoAdvertisement = async(req, res)=>{
     }
 }
 
+// handle carousel imageupload controller
+const handleCarouselImageUpload = async(req, res)=>{
+    try {
+        const files = req.files;
+        const mobileImage = files['mobileImage'] ? files['mobileImage'][0].filename : null;
+        const desktopImage = files['desktopImage'] ? files['desktopImage'][0].filename : null;
+        const carousel = new ImageCarousel({
+            mobileImage: mobileImage ? `/carouselImages/${mobileImage}`:null,
+            desktopImage: desktopImage ? `/carouselImages/${desktopImage}`:null,
+            title: req.body.title,
+            description: req.body.description,
+            url: req.body.url,
+            cast:req.body.cast,
+            rating : req.body.rating,
+        });
+        await carousel.save();
+        res.status(200).json({
+            message: "Carousel Image Uploaded successfully",
+        });
+    } catch (error) {
+        console.log("Error Uploading Carousel Image:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+// fetch all carousel images controller
+const fetchAllCarouselImages = async(req, res)=>{
+    try {
+        const carousels = await ImageCarousel.find().sort({_id: -1});
+        res.status(200).json({
+            message: "All Carousel Images fetched successfully",
+            carousels: carousels
+        });
+    } catch (error) {
+        console.log("Error Fetching All Carousel Images:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+//delete carousel image controller
+const deleteImageCarousel = async(req, res)=>{
+    try {
+        const {id} = req.params;
+        const carousel = await ImageCarousel.findById(id);
+        if(!carousel){
+            return res.status(404).json({ error: "Carousel Image not found" });
+        }
+        await ImageCarousel.findByIdAndDelete(id);
+        res.status(200).json({
+            message: "Carousel Image deleted successfully"
+        });
+    } catch (error) {
+        console.log("Error Deleting Carousel Image:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
 module.exports = {
     adminLogin,
     addCarousels,
@@ -1274,5 +1332,10 @@ module.exports = {
     fetchRandomTrailerAdvertisements,
     getAllVideoAdvertisements,
     updateVideoAdStatus,
-    deleteVideoAdvertisement
+    deleteVideoAdvertisement,
+
+    // Image carousel Controllers from here
+    handleCarouselImageUpload,
+    fetchAllCarouselImages,
+    deleteImageCarousel,
 };

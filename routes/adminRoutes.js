@@ -92,6 +92,27 @@ const adVideoUploadFields = adVideoUpload.fields([
     {name: "adVideo", maxCount: 1}
 ]);
 
+// carousel image storage configurations
+const carouselUploadLimits = {
+    fileSize: 1024 * 1024 * 1024 * 10
+};
+
+const carouselImages = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./public/carouselImages");
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        cb(null, `${uniqueSuffix}-${file.originalname}`);
+    }
+})
+const carouselUpload = multer({ storage: carouselImages, limits: carouselUploadLimits });
+
+// Configure multer to handle multiple file uploads for carousel images
+const carouselImageUpload = carouselUpload.fields([
+    { name: 'mobileImage', maxCount: 1 },
+    { name: 'desktopImage', maxCount: 1 },
+]);
 
 router.post('/login', adminController.adminLogin);
 
@@ -108,6 +129,11 @@ router.get('/get-random-full-video-ad', adminController.fetchRandomFullVideoAdve
 router.get('/get-all-ad-videos', adminAuth, adminController.getAllVideoAdvertisements);
 router.post('/update-video-ad-status', adminAuth, adminController.updateVideoAdStatus);
 router.delete('/delete-video-ad/:id', adminAuth, adminController.deleteVideoAdvertisement);
+
+// Carousel Routes
+router.post('/add-carousel-images', adminAuth, carouselImageUpload, adminController.handleCarouselImageUpload);
+router.get('/get-carousel-images', adminController.fetchAllCarouselImages);
+router.delete('/delete-carousel-image/:id', adminAuth, adminController.deleteImageCarousel);
 
 //Add Movie Post
 router.post('/add-videos', adminAuth, cpUpload, adminController.AddVideos);
